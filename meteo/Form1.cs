@@ -18,8 +18,8 @@ namespace meteo
         Point Cpos;                         // カーソル座標
         int[] enX = new int[10];            // 隕石の座標
         int[] enY = new int[10];
+        int[] meteRad = new int[10];        //隕石半径
         Random rand = new Random();
-        int RR;                             // 隕石の半径
         Boolean hitFlg;                     // true:当たった
         int ecnt, ex, ey;                   // 爆発演出
         long msgcnt;                        // メッセージ用カウンタ
@@ -56,7 +56,6 @@ namespace meteo
         {
             PW = 41; // 自機の幅
             PH = 51; // 自機の高さ
-            RR = 70 / 2; // 隕石の半径
 
             beamActive = false;
             beamCoolTime = 0;
@@ -64,10 +63,12 @@ namespace meteo
 
             for (int i = 0; i < 10; i++)
             {
+                meteRad[i] = rand.Next(7,10) *10 / 2;
                 enX[i] = rand.Next(1, 450);      // 隕石の初期配置座標
                 enY[i] = rand.Next(1, 900) - 1000;
+                Console.WriteLine(i + meteRad[i].ToString());
             }
-
+            
             hitFlg = false;  // false:当たっていない
             ecnt = 0; ex = 0; ey = 0; // 爆発の初めの処理で位置を変更する
             msgcnt = 0;
@@ -121,7 +122,7 @@ namespace meteo
             for (int i = 0; i < 10; i++)
             {
                 gg.DrawImage(pMeteor.Image,
-                    new Rectangle(enX[i], enY[i], RR * 2, RR * 2));
+                    new Rectangle(enX[i], enY[i], meteRad[i] * 2, meteRad[i] * 2));
             }
             gg.DrawImage(pPlayer.Image, new Rectangle(Cpos.X, 220, PW, PH));
             gg.DrawImage(pExp.Image, new Rectangle(ex - ecnt / 2, ey - ecnt / 2, ecnt, ecnt));
@@ -174,14 +175,18 @@ namespace meteo
             // 隕石の移動
             for (int i = 0; i < 10; i++)
             {
-                enY[i] += 5;
-                gg.DrawImage(pMeteor.Image,
-                    new Rectangle(enX[i], enY[i], RR * 2, RR * 2));
                 if (enY[i] > pBase.Height) // 画面外へ出たら上に戻す
                 {
+                    meteRad[i] = rand.Next(7, 10) * 10 / 2;
                     enX[i] = rand.Next(1, 450);
                     enY[i] = rand.Next(1, 300) - 400;
+                    Console.WriteLine(i + meteRad[i].ToString());
+
                 }
+
+                enY[i] += 5;
+                gg.DrawImage(pMeteor.Image,
+                    new Rectangle(enX[i], enY[i], meteRad[i] * 2, meteRad[i] * 2));
             }
 
             // ビーム処理
@@ -193,10 +198,10 @@ namespace meteo
                 // ビームと隕石の当たり判定
                 for (int i = 0; i < 10; i++)
                 {
-                    int ecx = enX[i] + RR;
-                    int ecy = enY[i] + RR;
+                    int ecx = enX[i] + meteRad[i];
+                    int ecy = enY[i] + meteRad[i];
                     int dis = (ecx - (beamX + 2)) * (ecx - (beamX + 2)) + (ecy - (beamY + 10)) * (ecy - (beamY + 10));
-                    if (dis < RR * RR)
+                    if (dis < meteRad[i] * meteRad[i])
                     {
                         // 隕石を再配置（破壊演出に変えてもOK）
                         enX[i] = rand.Next(1, 450);
@@ -247,10 +252,10 @@ namespace meteo
 
             for (int i = 0; i < 10; i++)
             {
-                ecx = enX[i] + RR;
-                ecy = enY[i] + RR;
+                ecx = enX[i] + meteRad[i];
+                ecy = enY[i] + meteRad[i];
                 dis = (ecx - pcx) * (ecx - pcx) + (ecy - pcy) * (ecy - pcy);
-                if (dis < RR * RR)
+                if (dis < meteRad[i] * meteRad[i])
                 {
                     hitFlg = true; // true:当たった
                     break;         // for から抜ける
